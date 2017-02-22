@@ -99,7 +99,7 @@ class CheckpostgresReplicationStatus < Sensu::Plugin::Metric::CLI::Graphite
                             user: config[:user],
                             password: config[:password],
                             connect_timeout: config[:timeout])
-    res = conn_slave.exec('SELECT pg_last_xlog_receive_location()').getvalue(0, 0)
+    res = conn_slave.exec('SELECT pg_last_xlog_replay_location()').getvalue(0, 0)
     conn_slave.close
 
     # Compute lag
