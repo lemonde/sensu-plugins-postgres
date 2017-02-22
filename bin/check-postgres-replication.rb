@@ -113,7 +113,7 @@ class CheckPostgresReplicationStatus < Sensu::Plugin::Check::CLI
                             sslmode: ssl_mode,
                             connect_timeout: config[:timeout])
 
-    slave = conn_slave.exec('SELECT pg_last_xlog_receive_location()').getvalue(0, 0)
+    slave = conn_slave.exec('SELECT pg_last_xlog_replay_location()').getvalue(0, 0)
     conn_slave.close
 
     # Computing lag
