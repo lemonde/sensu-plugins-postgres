@@ -140,7 +140,7 @@ class CheckPostgresReplicationStatus < Sensu::Plugin::Check::CLI
                             connect_timeout: config[:timeout])
 
     slave = if check_vsn(conn_slave)
-              conn_slave.exec('SELECT pg_last_xlog_receive_location()').getvalue(0, 0)
+              conn_slave.exec('SELECT pg_last_xlog_replay_location()').getvalue(0, 0)
             else
               conn_slave.exec('SELECT pg_last_wal_replay_lsn()').getvalue(0, 0)
             end
