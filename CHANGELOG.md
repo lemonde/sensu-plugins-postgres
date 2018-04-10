@@ -1,9 +1,81 @@
-#Change Log
+# Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-This CHANGELOG follows the format listed at [Keep A Changelog](http://keepachangelog.com/)
+This CHANGELOG follows the format listed [here](https://github.com/sensu-plugins/community/blob/master/HOW_WE_CHANGELOG.md).
 
 ## [Unreleased]
+
+## [1.4.5] - 2018-02-15
+### Fixed
+- metric-postgres-graphite.rb: use the custom defined port when connecting to slave (@henkjan)
+
+### Added
+- basic skel for integration testing with postgres (@majormoses)
+- added test for `./bin/check-postgres-alive.rb`
+
+## [1.4.4] - 2017-11-08
+### Fixed
+- check-postgres-replication.rb: fix 9.x compatibility
+
+## [1.4.3] - 2017-11-06
+### Fixed
+- check-postgres-replication.rb: maintains backwards compatibility with <= 9.6 and adds compatibility for >= 10
+
+## [1.4.2] - 2017-09-27
+### Fixed
+- metric-postgres-locks.rb: Fix lock count collection (@madboxkr)
+
+## [1.4.1] - 2017-09-26
+### Fixed
+- metrics-postgres-query.rb: Add a nil check to avoid failure when the query result is empty (@eheydrick)
+- PR template spelling (@majormoses)
+
+### Changed
+- updated CHANGELOG guidelines location (@majormoses)
+
+## [1.4.0] - 2017-08-04
+### Added
+- all checks now support using the pgpass file and is backwards compatible with the previous versions (@ahes)
+
+## [1.3.0] - 2017-07-25
+### Fixed
+- Take into account reserved superuser connections in check-postgres-connections.rb (@Evesy)
+
+### Added
+- Ruby 2.4.1 testing
+
+## [1.2.0] - 2017-07-12
+### Added
+- metric-postgres-statsdb.rb: Adds new metric `numbackends`. (@phumpal)
+
+## [1.1.2] - 2017-06-02
+### Fixed
+- check-postgresq-replication.rb: Adds missing option for custom port.
+
+## [1.1.1] - 2017-04-24
+### Fixed
+- metrics-postgres-query.rb: Restored default value to only return first value in query. (@Micasou)
+
+## [1.1.0] - 2017-04-20
+### Added
+- metrics-postgres-query.rb: Add option to return multi row queries. (@Micasou)
+
+### Fixed
+- check-postgres-alive.rb: Fix connections using a custom port (#25 via @mickfeech)
+- check-postgres-connections.rb: Fix connections using a custom port (#25)
+- check-postgres-query.rb: Fix connections using a custom port (#25)
+- check-postgres-replication.rb: Fix connections using a custom port (#25)
+- metrics-postgres-connections.rb: Fix connections using a custom port (#25)
+- metrics-postgres-dbsize.rb: Fix connections using a custom port (#25)
+- metrics-postgres-graphite.rb: Fix connections using a custom port (#25)
+- metrics-postgres-graphite.rb: Fix connections using password (@teadur)
+- metrics-postgres-locks.rb: Fix connections using a custom port (#25)
+- metrics-postgres-statsgbwriter.rb: Fix connections using a custom port (#25)
+- metrics-postgres-statsdb.rb: Fix connections using a custom port (#25)
+- metrics-postgres-statsio.rb: Fix connections using a custom port (#25)
+- metrics-postgres-statstable.rb: Fix connections using a custom port (#25)
+- metrics-postgres-query.rb: Fix connections using a custom port (#25)
+- check-postgres-connections.rb: Fix logic to check critical first then warning (#24 via @nevins-b)
 
 ## [1.0.1] - 2017-01-04
 ### Fixed
@@ -66,7 +138,18 @@ This CHANGELOG follows the format listed at [Keep A Changelog](http://keepachang
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.0.1...HEAD
+[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.4.5...HEAD
+[1.4.5]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.4.4...1.4.5
+[1.4.4]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.4.3...1.4.4
+[1.4.3]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.4.2...1.4.3
+[1.4.2]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.4.1...1.4.2
+[1.4.1]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.4.0...1.4.1
+[1.4.0]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.3.0...1.4.0
+[1.3.0]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.2.0...1.3.0
+[1.2.0]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.1.2...1.2.0
+[1.1.2]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.1.1...1.1.2
+[1.1.1]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/0.1.1...1.0.0
 [0.1.1]: https://github.com/sensu-plugins/sensu-plugins-postgres/compare/0.1.0...0.1.1

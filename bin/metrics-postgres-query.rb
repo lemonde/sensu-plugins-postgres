@@ -27,10 +27,17 @@
 #   for details.
 #
 
+require 'sensu-plugins-postgres/pgpass'
 require 'sensu-plugin/metric/cli'
 require 'pg'
 
 class MetricsPostgresQuery < Sensu::Plugin::Metric::CLI::Graphite
+  option :pgpass,
+         description: 'Pgpass file',
+         short: '-f FILE',
+         long: '--pgpass',
+         default: ENV['PGPASSFILE'] || "#{ENV['HOME']}/.pgpass"
+
   option :user,
          description: 'Postgres User',
          short: '-u USER',
@@ -44,20 +51,17 @@ class MetricsPostgresQuery < Sensu::Plugin::Metric::CLI::Graphite
   option :hostname,
          description: 'Hostname to login to',
          short: '-h HOST',
-         long: '--hostname HOST',
-         default: 'localhost'
+         long: '--hostname HOST'
 
   option :port,
          description: 'Database port',
          short: '-P PORT',
-         long: '--port PORT',
-         default: 5432
+         long: '--port PORT'
 
   option :database,
          description: 'Database name',
          short: '-d DB',
-         long: '--db DB',
-         default: 'postgres'
+         long: '--db DB'
 
   option :query,
          description: 'Database query to execute',
@@ -78,18 +82,29 @@ class MetricsPostgresQuery < Sensu::Plugin::Metric::CLI::Graphite
          long: '--scheme SCHEME',
          default: 'postgres'
 
+  option :multirow,
+         description: 'Determines if we return first row or all rows',
+         short: '-m',
+         long: '--multirow',
+         boolean: true,
+         default: false
+
   option :timeout,
          description: 'Connection timeout (seconds)',
          short: '-T TIMEOUT',
          long: '--timeout TIMEOUT',
          default: nil
 
+  include Pgpass
+
   def run
     begin
+      pgpass
       con = PG.connect(host: config[:hostname],
                        dbname: config[:database],
                        user: config[:user],
                        password: config[:password],
+                       port: config[:port],
                        connect_timeout: config[:timeout])
       res = con.exec(config[:query].to_s)
     rescue PG::Error => e
@@ -99,10 +114,16 @@ class MetricsPostgresQuery < Sensu::Plugin::Metric::CLI::Graphite
     value = if config[:count_tuples]
               res.ntuples
             else
-              res.first.values.first
+              res.first.values.first unless res.first.nil?
             end
 
-    output config[:scheme], value
+    if config[:multirow] && !config[:count_tuples]
+      res.values.each do |row|
+        output "#{config[:scheme]}.#{row[0]}", row[1]
+      end
+    else
+      output config[:scheme], value
+    end
     ok
   end
 end
