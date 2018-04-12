@@ -32,10 +32,17 @@
 #   for details.
 #
 
+require 'sensu-plugins-postgres/pgpass'
 require 'sensu-plugin/check/cli'
 require 'pg'
 
 class CheckPostgresConnections < Sensu::Plugin::Check::CLI
+  option :pgpass,
+         description: 'Pgpass file',
+         short: '-f FILE',
+         long: '--pgpass',
+         default: ENV['PGPASSFILE'] || "#{ENV['HOME']}/.pgpass"
+
   option :user,
          description: 'Postgres User',
          short: '-u USER',
@@ -49,20 +56,17 @@ class CheckPostgresConnections < Sensu::Plugin::Check::CLI
   option :hostname,
          description: 'Hostname to login to',
          short: '-h HOST',
-         long: '--hostname HOST',
-         default: 'localhost'
+         long: '--hostname HOST'
 
   option :port,
          description: 'Database port',
          short: '-P PORT',
-         long: '--port PORT',
-         default: 5432
+         long: '--port PORT'
 
   option :database,
          description: 'Database name',
          short: '-d DB',
-         long: '--db DB',
-         default: 'postgres'
+         long: '--db DB'
 
   option :warning,
          description: 'Warning threshold number or % of connections. (default: 200 connections)',
@@ -91,14 +95,20 @@ class CheckPostgresConnections < Sensu::Plugin::Check::CLI
          long: '--timeout TIMEOUT',
          default: nil
 
+  include Pgpass
+
   def run
     begin
+      pgpass
       con = PG.connect(host: config[:hostname],
                        dbname: config[:database],
                        user: config[:user],
                        password: config[:password],
+                       port: config[:port],
                        connect_timeout: config[:timeout])
       max_conns = con.exec('SHOW max_connections').getvalue(0, 0).to_i
+      superuser_conns = con.exec('SHOW superuser_reserved_connections').getvalue(0, 0).to_i
+      available_conns = max_conns - superuser_conns
       current_conns = con.exec('SELECT count(*) from pg_stat_activity').getvalue(0, 0).to_i
     rescue PG::Error => e
       unknown "Unable to query PostgreSQL: #{e.message}"
@@ -107,22 +117,22 @@ class CheckPostgresConnections < Sensu::Plugin::Check::CLI
     percent = (current_conns.to_f / max_conns.to_f * 100).to_i
 
     if config[:use_percentage]
-      message = "PostgreSQL connections at #{percent}%, #{current_conns} out of #{max_conns} connections"
+      message = "PostgreSQL connections at #{percent}%, #{current_conns} out of #{available_conns} connections"
       if percent >= config[:critical]
         critical message
       elsif percent >= config[:warning]
         warning message
       else
-        ok "PostgreSQL connections under threshold: #{percent}%, #{current_conns} out of #{max_conns} connections"
+        ok "PostgreSQL connections under threshold: #{percent}%, #{current_conns} out of #{available_conns} connections"
       end
     else
-      message = "PostgreSQL connections at #{current_conns} out of #{max_conns} connections"
+      message = "PostgreSQL connections at #{current_conns} out of #{available_conns} connections"
       if current_conns >= config[:critical]
         critical message
       elsif current_conns >= config[:warning]
         warning message
       else
-        ok "PostgreSQL connections under threshold: #{current_conns} out of #{max_conns} connections"
+        ok "PostgreSQL connections under threshold: #{current_conns} out of #{available_conns} connections"
       end
     end
   end

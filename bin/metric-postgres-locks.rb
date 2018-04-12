@@ -28,11 +28,18 @@
 #   for details.
 #
 
+require 'sensu-plugins-postgres/pgpass'
 require 'sensu-plugin/metric/cli'
 require 'pg'
 require 'socket'
 
 class PostgresStatsDBMetrics < Sensu::Plugin::Metric::CLI::Graphite
+  option :pgpass,
+         description: 'Pgpass file',
+         short: '-f FILE',
+         long: '--pgpass',
+         default: ENV['PGPASSFILE'] || "#{ENV['HOME']}/.pgpass"
+
   option :user,
          description: 'Postgres User',
          short: '-u USER',
@@ -46,20 +53,17 @@ class PostgresStatsDBMetrics < Sensu::Plugin::Metric::CLI::Graphite
   option :hostname,
          description: 'Hostname to login to',
          short: '-h HOST',
-         long: '--hostname HOST',
-         default: 'localhost'
+         long: '--hostname HOST'
 
   option :port,
          description: 'Database port',
          short: '-P PORT',
-         long: '--port PORT',
-         default: 5432
+         long: '--port PORT'
 
   option :database,
          description: 'Database name',
          short: '-d DB',
-         long: '--db DB',
-         default: 'postgres'
+         long: '--db DB'
 
   option :scheme,
          description: 'Metric naming scheme, text to prepend to $queue_name.$metric',
@@ -72,26 +76,29 @@ class PostgresStatsDBMetrics < Sensu::Plugin::Metric::CLI::Graphite
          long: '--timeout TIMEOUT',
          default: nil
 
+  include Pgpass
+
   def run
     timestamp = Time.now.to_i
 
     locks_per_type = Hash.new(0)
-
+    pgpass
     con     = PG.connect(host: config[:hostname],
                          dbname: config[:database],
                          user: config[:user],
                          password: config[:password],
+                         port: config[:port],
                          connect_timeout: config[:timeout])
     request = [
-      'SELECT mode, count(mode) FROM pg_locks',
-      "where database = (select oid from pg_database where datname = '#{config[:database]}')",
-      'group by mode'
+      'SELECT mode, count(mode) AS count FROM pg_locks',
+      "WHERE database = (SELECT oid FROM pg_database WHERE datname = '#{config[:database]}')",
+      'GROUP BY mode'
     ]
 
     con.exec(request.join(' ')) do |result|
       result.each do |row|
         lock_name = row['mode'].downcase.to_sym
-        locks_per_type[lock_name] += 1
+        locks_per_type[lock_name] = row['count']
       end
     end
 
