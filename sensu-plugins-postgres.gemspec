@@ -37,7 +37,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_runtime_dependency 'sensu-plugin', '~> 1.2'
 
   s.add_runtime_dependency 'dentaku',      '2.0.4'
-  s.add_runtime_dependency 'pg',           '0.18.3'
+  s.add_runtime_dependency 'pg',           '1.1.4'
 
   s.add_development_dependency 'bundler',                   '~> 1.7'
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4'
@@ -51,7 +51,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_development_dependency 'redcarpet',                 '~> 3.2'
   s.add_development_dependency 'rspec',                     '~> 3.1'
   s.add_development_dependency 'rubocop',                   '~> 0.49.0'
-  s.add_development_dependency 'serverspec',                '~> 2.36.1'
-  s.add_development_dependency 'test-kitchen',              '~> 1.16.0'
+  s.add_development_dependency 'serverspec',                '~> 2.36', '>= 2.36.1'
+  s.add_development_dependency 'test-kitchen',              '~> 1.16', '>= 1.16.0'
   s.add_development_dependency 'yard',                      '~> 0.8'
 end
